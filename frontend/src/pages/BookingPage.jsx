@@ -16,6 +16,7 @@ const BookingPage = ({ singleUse = false }) => {
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const [loading, setLoading] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchEvent(); }, [slug, token]);
 
   const fetchEvent = async () => {

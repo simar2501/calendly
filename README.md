@@ -1,102 +1,153 @@
-Schedulr | Full-Stack Calendly Clone
-Schedulr is a high-performance scheduling platform designed to replicate the seamless booking experience of Calendly. This project was developed as part of the Phase 2 SDE Intern Evaluation, focusing on modular architecture, robust database design, and a pixel-perfect UI.
+# Schedulr — Calendly Clone
 
-🚀 Live Demo & Repository
-Deployment: https://calendly-k6o5tcdd4-simars-projects-7ce3adec.vercel.app/dashboard
+A full-stack scheduling application built as part of an internship evaluation. Schedulr replicates core Calendly features including event type management, availability configuration, one-on-one bookings, meeting polls, single-use links, and contact management.
 
-🛠 Tech Stack
-Frontend
-Framework: React.js (Vite)
+---
 
-Styling: Tailwind CSS (Custom Design System)
+## Tech Stack
 
-State & Routing: React Router Dom v6
+- **Backend:** FastAPI (Python)
+- **Database:** PostgreSQL (via SQLAlchemy ORM)
+- **Validation:** Pydantic
+- **Frontend:** React (Create React App)
+- **Email:** SMTP (Gmail) via `smtplib`
 
-Icons: Lucide React
+---
 
-Date Handling: Day.js (with UTC & Timezone plugins)
+## Features
 
-Backend
-Runtime: Node.js with Express.js
+- **Event Types** — Create, update, and manage meeting types with custom duration, color, slug, and location.
+- **Availability** — Set weekly availability windows per day of the week; supports override dates for exceptions.
+- **Bookings** — Invitees can book a slot via event slug. Includes conflict detection, buffer time logic (before/after meeting), and double-booking prevention per invitee email.
+- **Single-Use Links** — Generate one-time booking links tied to an event type. A link is automatically marked as used after a booking is made through it.
+- **Meeting Polls** — Create polls with multiple proposed time slots; invitees vote on their availability, and the host confirms a final slot.
+- **Meetings** — View and manage scheduled meetings.
+- **Contacts** — Manage a list of contacts.
+- **Email Notifications** — Confirmation emails are sent to invitees upon booking via Gmail SMTP.
+- **Auto-seeded Default User** — A default user (`John Doe`) is created on startup if none exists.
 
-ORM: Sequelize (PostgreSQL)
+---
 
-Emailing: Nodemailer (SMTP Integration)
+## Project Structure
 
-Validation: Logic-based conflict checking for double-booking prevention.
+```
+backend/
+├── main.py          # FastAPI app entry point, middleware, router registration
+├── models.py        # SQLAlchemy ORM models
+├── schemas.py       # Pydantic request/response schemas
+├── database.py      # DB engine and session setup
+├── seed.py          # Optional database seeding script
+└── routes/
+    ├── event_types.py
+    ├── availability.py
+    ├── bookings.py
+    ├── meetings.py
+    ├── contacts.py
+    ├── SingleUseLink.py
+    └── polls.py
+```
 
-✨ Core Features
-1. Event Type Management (Admin)
-Dynamic Dashboard: A grid-based view of all active event types with color-coded categories.
+---
 
-CRUD Operations: Create, edit, and delete event types (Duration, Slug, Location, and Color).
+## Database Models
 
-Quick Actions: "Copy Link" functionality and direct preview of the public booking page.
+- **`User`** — The host user (single-user system, ID=1 by default)
+- **`EventType`** — A meeting type with title, duration, slug, color, etc.
+- **`Availability`** — Weekly recurring availability windows
+- **`AvailabilityOverride`** — Date-specific availability exceptions
+- **`Booking`** — A confirmed meeting between host and invitee
+- **`SingleUseLink`** — One-time booking tokens linked to an event type
+- **`MeetingPoll`** — A group scheduling poll with proposed time slots
+- **`PollTimeSlot`** — Individual time options within a poll
+- **`PollVote`** — Invitee votes on poll slots
 
-2. Availability Engine
-Weekly Logic: Set recurring "Working Hours" for each day of the week.
+---
 
-Timezone Aware: Global scheduling support using Asia/Kolkata as the default.
+## API Endpoints
 
-Date-Specific Overrides: (Feature implemented) Add specific slots or mark yourself unavailable for specific calendar dates.
+### Event Types — `/api/event-types`
+- `GET /` — List all event types
+- `POST /` — Create a new event type
+- `PUT /{id}` — Update an event type
+- `DELETE /{id}` — Delete an event type
 
-3. Public Booking Flow (UX-Focused)
-Two-Column Layout: Matches Calendly’s signature split-view (Event details on the left, interactive calendar on the right).
+### Availability — `/api/availability`
+- `GET /` — Get availability schedule
+- `POST /` — Set availability for a day
+- `PUT /{id}` — Update an availability window
 
-Smart Slots: Dynamically calculates available time slots based on the host's availability and existing meetings.
+### Bookings — `/api/booking`
+- `GET /{slug}` — Get event details by slug
+- `GET /{slug}/slots` — Get available slots for a date
+- `POST /{slug}` — Create a booking (supports `?token` query param for single-use links)
 
-Double-Booking Protection: Real-time backend validation ensures no two meetings can overlap in the same event type.
+### Single-Use Links — `/api/single-use-links`
+- `POST /` — Generate a single-use link
+- `GET /{token}` — Validate/fetch a link
 
-4. Meeting Management
-Tabs: View "Upcoming" and "Past" meetings.
+### Meeting Polls — `/api/polls`
+- `POST /` — Create a new poll
+- `GET /{token}` — Fetch a poll by token
+- `POST /{token}/vote` — Submit votes on time slots
+- `POST /{token}/confirm/{slot_id}` — Host confirms a slot
 
-Cancelation: Ability to cancel meetings with an automated email notification sent to the invitee.
+### Meetings — `/api/meetings`
+### Contacts — `/api/contacts`
 
-📂 Database Schema Design
-The system uses a relational PostgreSQL schema managed via Sequelize:
+---
 
-User: Stores admin profile and global settings.
+## Setup & Installation
 
-EventType: Linked to User (1:N). Stores configuration for meeting types (e.g., "15 Min Chat").
+### Prerequisites
+- Python 3.9+
+- PostgreSQL
+- Node.js & npm (for frontend)
 
-Availability: Linked to User (1:1). Stores a JSONB blob of weeklyHours for high flexibility.
+### Backend
 
-Meeting: Linked to EventType (1:N). Stores invitee data and startTime/endTime timestamps.
+```bash
+# Clone the repo
+git clone <repo-url>
+cd backend
 
-⚙️ Installation & Setup
-Prerequisites
-Node.js (v18+)
+# Install dependencies
+pip install -r requirements.txt
 
-PostgreSQL
+# Set environment variables (create a .env file)
+DATABASE_URL=postgresql://user:password@localhost/schedulr
+DEFAULT_USER_ID=1
 
-Backend Setup
-Navigate to /backend
+# Run the server
+uvicorn main:app --reload
+```
 
-Create a .env file:
+> API docs available at: `http://localhost:8000/docs`
 
-Code snippet
-PORT=5000
-DB_NAME=schedulr
-DB_USER=postgres
-DB_PASSWORD=your_password
-EMAIL_USER=your_gmail
-EMAIL_PASS=your_app_password
-Install dependencies and start:
+### Frontend
 
-Bash
+```bash
+cd frontend
 npm install
-npm run dev
-Frontend Setup
-Navigate to /frontend
+npm start
+```
 
-Install dependencies and start:
+> App available at: `http://localhost:3000`
 
-Bash
-npm install
-npm run dev
-🧠 Technical Decisions & Assumptions
-No Auth Assumption: Per assignment requirements, a default admin user is automatically injected into the request context via middleware (app.use) to simplify the evaluation of the booking flow.
+---
 
-Atomic CSS: Used Tailwind CSS to ensure the UI remains lightweight and matches Calendly's exact padding, border-radius (2xl), and color palette (#0069ff).
+## Environment Variables
 
-Conflict Logic: The backend utilizes Sequelize operators (Op.lt, Op.gt) to perform range-overlap checks during the booking process to ensure 100% data integrity.
+- **`DATABASE_URL`** — PostgreSQL connection string
+- **`DEFAULT_USER_ID`** — The default host user ID (default: 1)
+
+> **Note:** Email credentials in `bookings.py` (`sender` / `password`) should be moved to environment variables before production use.
+
+---
+
+## Key Design Decisions
+
+- **Single-user system:** The app is designed around one host (user ID=1), matching the intern-phase scope of the project.
+- **Buffer time:** Bookings support configurable buffer windows before and after each meeting to avoid back-to-back scheduling.
+- **Conflict detection:** Both slot-level and per-invitee email conflict checks are enforced at booking time.
+- **Single-use links:** Tokens are UUID-based and are atomically marked as used post-booking to prevent double-booking.
+- **Meeting Polls:** Modeled separately from bookings — polls go through a vote → confirm lifecycle before becoming a confirmed meeting.

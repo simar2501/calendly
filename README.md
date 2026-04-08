@@ -2,9 +2,7 @@ Schedulr | Full-Stack Calendly Clone
 Schedulr is a high-performance scheduling platform designed to replicate the seamless booking experience of Calendly. This project was developed as part of the Phase 2 SDE Intern Evaluation, focusing on modular architecture, robust database design, and a pixel-perfect UI.
 
 🚀 Live Demo & Repository
-Deployment: [Link to Vercel/Render/Railway]
-
-GitHub: [Link to your Repository]
+Deployment: https://calendly-k6o5tcdd4-simars-projects-7ce3adec.vercel.app/dashboard
 
 🛠 Tech Stack
 Frontend
